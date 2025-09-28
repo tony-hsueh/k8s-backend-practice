@@ -58,7 +58,7 @@ jobs:
       - name: Set deployment name
         id: set_name
         run: |
-          echo "DEPLOYMENT_NAME=${GITHUB_REF_NAME%-*}" >> $GITHUB_ENV
+          echo "DEPLOYMENT_NAME=${GITHUB_REF_NAME%%-*}" >> $GITHUB_ENV
 
       - name: Deploy to Kubernetes
         env:
@@ -66,5 +66,10 @@ jobs:
           IMAGE_TAG: ${{ github.ref_name }}
           DEPLOYMENT_NAME: myapp-${{ env.DEPLOYMENT_NAME }}
         run: |
+          echo "Current directory: $(pwd)"
+          echo "Files in current directory:"
+          ls -la
+          echo "Files in k8s directory:"
+          ls -la k8s/
           # 替換 deployment.yaml 裡的變數
           envsubst < k8s/deployment.yaml | kubectl apply -f -
