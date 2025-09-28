@@ -44,7 +44,7 @@ jobs:
 
       - name: Get GKE credentials
         run: |
-          gcloud container clusters get-credentials hello-world-cluster --zone asia-east2
+          gcloud container clusters get-credentials hello-world-cluster --region asia-east2
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
