@@ -32,3 +32,25 @@ jobs:
         run: |
           IMAGE_NAME=tonyhsueh630/practice-app:${GITHUB_REF_NAME}
           docker push $IMAGE_NAME
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "latest"
+
+      - name: Set deployment name
+        id: set_name
+        run: |
+          echo "DEPLOYMENT_NAME=${GITHUB_REF_NAME%-*}" >> $GITHUB_ENV
+
+      - name: Deploy to Kubernetes
+        env:
+          IMAGE_NAME: tonyhsueh630/practice-app
+          IMAGE_TAG: ${{ github.ref_name }}
+          DEPLOYMENT_NAME: myapp-${{ env.DEPLOYMENT_NAME }}
+        run: |
+          # 替換 deployment.yaml 裡的變數
+          envsubst < k8s/deployment.yaml | kubectl apply -f -

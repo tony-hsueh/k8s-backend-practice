@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "${DEPLOYMENT_NAME}" # 動態: myapp-main / myapp-feature-x
+spec:
+  replicas: 2 # 每個 branch 最新版本只需要 1 個 Pod
+  selector:
+    matchLabels:
+      app: "${DEPLOYMENT_NAME}"
+  template:
+    metadata:
+      labels:
+        app: "${DEPLOYMENT_NAME}"
+    spec:
+      containers:
+        - name: myapp
+          image: "${IMAGE_NAME}:${IMAGE_TAG}" # 動態: main-0.2 / feature-x-0.2
+          ports:
+            - containerPort: 3000
