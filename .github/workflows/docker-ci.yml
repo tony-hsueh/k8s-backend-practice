@@ -33,9 +33,6 @@ jobs:
           IMAGE_NAME=tonyhsueh630/practice-app:${GITHUB_REF_NAME}
           docker push $IMAGE_NAME
 
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
@@ -64,7 +61,7 @@ jobs:
         env:
           IMAGE_NAME: tonyhsueh630/practice-app
           IMAGE_TAG: ${{ github.ref_name }}
-          DEPLOYMENT_NAME: myapp-${{ env.DEPLOYMENT_NAME }}
+          DEPLOYMENT_NAME: ${{ env.DEPLOYMENT_NAME }}
         run: |
           echo "Current directory: $(pwd)"
           echo "Files in current directory:"
