@@ -36,6 +36,16 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up GCP credentials
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: second-academy-473511-q2
+
+      - name: Get GKE credentials
+        run: |
+          gcloud container clusters get-credentials hello-world-cluster --zone asia-east2
+
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
