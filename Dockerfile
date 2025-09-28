@@ -10,6 +10,9 @@ COPY package*.json ./
 # install app dependencies
 RUN npm install
 
+# 複製後端檔案
+COPY . .
+
 # 對外暴露 port
 EXPOSE 3000
 
