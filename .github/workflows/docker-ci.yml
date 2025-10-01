@@ -6,6 +6,10 @@ on:
       - "*"
   workflow_dispatch:
 
+env:
+  REGION: asia-east2
+  PROJECT_ID: second-academy-473511-q2
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,36 +18,47 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 登入 Docker Registry
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # 3. Build Docker image
-      - name: Build Docker image
-        run: |
-          IMAGE_NAME=tonyhsueh630/practice-app:${GITHUB_REF_NAME}
-          docker build -t $IMAGE_NAME .
-
-      # 4. Push image
-      - name: Push Docker image
-        run: |
-          IMAGE_NAME=tonyhsueh630/practice-app:${GITHUB_REF_NAME}
-          docker push $IMAGE_NAME
-
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+      - name: Configure Docker
+        run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
+
+      - name: Extract metadata
+        id: meta
+        run: |
+          FEATURE_NAME="${GITHUB_REF_NAME##*_}"
+          echo "REPO=${GITHUB_REF_NAME%%-*}" >> $GITHUB_ENV
+          echo "FEATURE_NAME=${FEATURE_NAME%%.*}" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${GITHUB_REF_NAME#*-}" >> $GITHUB_ENV
+
+      - name: Create repository if not exists
+        run: |
+          gcloud artifacts repositories describe ${{ env.REPO }} \
+            --location=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} || \
+          gcloud artifacts repositories create ${{ env.REPO }} \
+            --repository-format=docker \
+            --location=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }}
+
+      - name: Build and Push Docker image
+        env:
+          REPO: ${{ env.REPO }}
+          IMAGE_NAME: ${{ env.FEATURE_NAME }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE_NAME:$IMAGE_TAG .
+          docker push $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE_NAME:$IMAGE_TAG
+
       - name: Get GKE credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: hello-world-cluster
-          location: asia-east2
-          project_id: second-academy-473511-q2
+          location: ${{ env.REGION }}
+          project_id: ${{ env.PROJECT_ID }}
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -53,12 +68,15 @@ jobs:
       - name: Set deployment name
         id: set_name
         run: |
-          echo "DEPLOYMENT_NAME=${GITHUB_REF_NAME%%-*}" >> $GITHUB_ENV
+          echo "DEPLOYMENT_NAME=${{ env.REPO }}-${{ env.FEATURE_NAME }}" >> $GITHUB_ENV
 
       - name: Deploy to Kubernetes
         env:
-          IMAGE_NAME: tonyhsueh630/practice-app
-          IMAGE_TAG: ${{ github.ref_name }}
+          REGION: ${{ env.REGION }}
+          PROJECT_ID: ${{ env.PROJECT_ID }}
+          REPO: ${{ env.REPO }}
+          IMAGE_NAME: ${{ env.FEATURE_NAME }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
           DEPLOYMENT_NAME: ${{ env.DEPLOYMENT_NAME }}
         run: |
           # 替換 deployment.yaml 裡的變數

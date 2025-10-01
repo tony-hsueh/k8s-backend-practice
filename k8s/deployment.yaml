@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: "${IMAGE_NAME}:${IMAGE_TAG}" # 動態: main-0.2 / feature-x-0.2
+          image: "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${IMAGE_TAG}" # 動態: main-0.2 / feature-x-0.2
           ports:
             - containerPort: 3000
