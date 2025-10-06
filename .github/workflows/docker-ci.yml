@@ -68,7 +68,7 @@ jobs:
       - name: Set deployment name
         id: set_name
         run: |
-          echo "DEPLOYMENT_NAME=${{ env.REPO }}-${{ env.FEATURE_NAME }}" >> $GITHUB_ENV
+          echo "DEPLOYMENT_NAME=${{ env.FEATURE_NAME }}" >> $GITHUB_ENV
 
       - name: Deploy to Kubernetes
         env:
