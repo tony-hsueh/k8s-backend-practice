@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "${DEPLOYMENT_NAME}" # 動態: myapp-main / myapp-feature-x
+  name: "${DEPLOYMENT_NAME}"
 spec:
   replicas: 2 # 每個 branch 最新版本只需要 1 個 Pod
   selector:
@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${IMAGE_NAME}:${IMAGE_TAG}" # 動態: main-0.2 / feature-x-0.2
+          image: "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/features/${FEATURE_NAME}/${BUILD_HASH}:${IMAGE_TAG}"
           ports:
             - containerPort: 3000
