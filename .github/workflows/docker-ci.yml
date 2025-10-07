@@ -30,8 +30,9 @@ jobs:
       - name: Extract metadata
         id: meta
         run: |
-          FEATURE_NAME="${GITHUB_REF_NAME##*_}"
-          echo "FEATURE_NAME=${FEATURE_NAME%%.*}" >> $GITHUB_ENV
+          FEATURE_NAME="${GITHUB_REF_NAME#*-}"
+          FEATURE_NAME="${FEATURE_NAME%.*}"
+          echo "FEATURE_NAME=${FEATURE_NAME//_/-}" >> $GITHUB_ENV
           echo "IMAGE_TAG=${GITHUB_REF_NAME}" >> $GITHUB_ENV
 
       - name: Build and Push Docker image
@@ -41,7 +42,7 @@ jobs:
           FEATURE_NAME: ${{ env.FEATURE_NAME }}
         run: |
           IMAGE_ID=$(docker build -q .)
-          BUILD_HASH=${IMAGE_ID:0:8}
+          BUILD_HASH=${IMAGE_ID:7:8}
           echo "BUILD_HASH=${BUILD_HASH}" >> $GITHUB_ENV
           docker tag $IMAGE_ID $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/features/$FEATURE_NAME/$BUILD_HASH:$IMAGE_TAG
           docker push $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/features/$FEATURE_NAME/$BUILD_HASH:$IMAGE_TAG
