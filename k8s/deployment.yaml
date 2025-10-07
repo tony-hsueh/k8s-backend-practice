@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/features/${FEATURE_NAME}/${BUILD_HASH}:${IMAGE_TAG}"
+          image: "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${FEATURE_NAME}/${BUILD_HASH}:${IMAGE_TAG}"
           ports:
             - containerPort: 3000
