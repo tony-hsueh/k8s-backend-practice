@@ -41,15 +41,8 @@ jobs:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
           FEATURE_NAME: ${{ env.FEATURE_NAME }}
         run: |
-          IMAGE_ID=$(docker build -q .)
-          BUILD_HASH=${IMAGE_ID:7:8}
-          echo "BUILD_HASH=${BUILD_HASH}" >> $GITHUB_ENV
-          docker tag $IMAGE_ID $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$FEATURE_NAME/$BUILD_HASH:$IMAGE_TAG
-          PUSH_OUTPUT=$(docker push $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$FEATURE_NAME/$BUILD_HASH:$IMAGE_TAG)
-          echo "Push output: $PUSH_OUTPUT"
-          DIGEST=$(echo "$PUSH_OUTPUT" | grep -o 'sha256:[a-f0-9]\{64\}')
-          echo "Image digest: $DIGEST"
-          echo "Digest hash (first 8 chars): ${DIGEST:7:8}"
+          docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/features:$IMAGE_TAG .
+          docker push $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/features:$IMAGE_TAG
 
       - name: Get GKE credentials
         uses: google-github-actions/get-gke-credentials@v2
@@ -74,7 +67,6 @@ jobs:
           PROJECT_ID: ${{ env.PROJECT_ID }}
           REPO: ${{ env.REPO }}
           FEATURE_NAME: ${{ env.FEATURE_NAME }}
-          BUILD_HASH: ${{ env.BUILD_HASH }}
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
           DEPLOYMENT_NAME: ${{ env.DEPLOYMENT_NAME }}
         run: |
