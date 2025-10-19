@@ -14,6 +14,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: stage
     steps:
       - name: Validate tag format
         id: validate_tag
@@ -72,6 +73,12 @@ jobs:
         run: |
           echo "DEPLOYMENT_NAME=${{ env.FEATURE_NAME }}" >> $GITHUB_ENV
 
+      - name: Generate .env file from GitHub environment variables
+        run: |
+          echo "APP_ENV=${{ vars.APP_ENV }}" >> .env
+          echo "APP_NAME=${{ vars.APP_NAME }}" >> .env
+          echo "API_URL=${{ vars.API_URL }}" >> .env
+
       - name: Deploy to Kubernetes
         env:
           REGION: ${{ env.REGION }}
@@ -81,6 +88,14 @@ jobs:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
           DEPLOYMENT_NAME: ${{ env.DEPLOYMENT_NAME }}
         run: |
-          # 替換 deployment.yaml 裡的變數
-          envsubst < k8s/deployment.yaml | kubectl apply -f -
-          envsubst < k8s/service.yaml | kubectl apply -f -
+          if kubectl get configmap "${DEPLOYMENT_NAME}" >/dev/null 2>&1; then
+             echo "✅ ConfigMap ${DEPLOYMENT_NAME} 已存在，略過建立。"
+           else
+             echo "🆕 建立新的 ConfigMap ${DEPLOYMENT_NAME}"
+             kubectl create configmap "${DEPLOYMENT_NAME}" \
+               --from-env-file=.env \
+               --dry-run=client -o yaml | kubectl apply -f -
+           fi
+           # 替換 deployment.yaml 裡的變數
+           envsubst < k8s/deployment.yaml | kubectl apply -f -
+           envsubst < k8s/service.yaml | kubectl apply -f -

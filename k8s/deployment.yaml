@@ -17,3 +17,6 @@ spec:
           image: "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/features:${IMAGE_TAG}"
           ports:
             - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: "${DEPLOYMENT_NAME}"
