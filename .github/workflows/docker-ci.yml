@@ -89,9 +89,9 @@ jobs:
           DEPLOYMENT_NAME: ${{ env.DEPLOYMENT_NAME }}
         run: |
           if kubectl get configmap "${DEPLOYMENT_NAME}" >/dev/null 2>&1; then
-             echo "✅ ConfigMap ${DEPLOYMENT_NAME} 已存在，略過建立。"
+             echo "ConfigMap ${DEPLOYMENT_NAME} 已存在，略過建立。"
            else
-             echo "🆕 建立新的 ConfigMap ${DEPLOYMENT_NAME}"
+             echo "建立新的 ConfigMap ${DEPLOYMENT_NAME}"
              kubectl create configmap "${DEPLOYMENT_NAME}" \
                --from-env-file=.env \
                --dry-run=client -o yaml | kubectl apply -f -
