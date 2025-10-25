@@ -51,8 +51,8 @@ jobs:
               echo ${deployment} | base64 --decode | jq -r ${1}
             }
 
-            DEPLOY_NAME=$(_jq '.metadata.name')
-            CREATE_TIME=$(_jq '.metadata.creationTimestamp')
+            DEPLOY_NAME=$(_jq '.name')
+            CREATE_TIME=$(_jq '.creationTimestamp')
             
             # 轉換創建時間為 Unix 時間戳
             CREATE_TIMESTAMP=$(date -d "$CREATE_TIME" +%s 2>/dev/null)
