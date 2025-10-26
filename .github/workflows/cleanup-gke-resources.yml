@@ -8,6 +8,7 @@ on:
 env:
   REGION: asia-east2
   PROJECT_ID: second-academy-473511-q2
+  REPO: laravel-multi-stg
   EXPIRY_SECONDS: 300 # 資源過期時間，單位為秒 (5 分鐘)
 
 jobs:
@@ -69,7 +70,9 @@ jobs:
 
             # 檢查是否過期
             if [ $AGE -ge $EXPIRY_SECONDS ]; then
-              echo "刪除過期的資源: $DEPLOY_NAME (已存在 ${AGE} 秒)"
+              EXPIRY_TS=$((CREATE_TIMESTAMP + EXPIRY_SECONDS))
+              EXPIRY_DATE=$(date -d "@$EXPIRY_TS" "+%Y-%m-%d %H:%M")
+              echo "刪除過期的資源: $DEPLOY_NAME (過期時間: $EXPIRY_DATE)"
               
               # 刪除 deployment
               kubectl delete deployment $DEPLOY_NAME --ignore-not-found=true
@@ -82,6 +85,25 @@ jobs:
               # 刪除對應的 configmap
               kubectl delete configmap $DEPLOY_NAME --ignore-not-found=true
               echo "已刪除 configmap: $DEPLOY_NAME"
+
+              # 刪除對應的 docker images
+              IMAGES=$(gcloud artifacts docker tags list \
+              asia-east2-docker.pkg.dev/${PROJECT_ID}/${REPO}/features \
+              --filter="tag~'-${DEPLOY_NAME//-/_}\\.'" \
+              --format="value(tag)")
+
+              if [[ -z "$IMAGES" ]]; then
+                echo "沒有匹配的 image，沒有刪除任何東西。"
+              else
+                echo "找到以下 image，CI 將刪除它們："
+                echo "$IMAGES"
+                # 逐一刪除
+                while IFS= read -r image; do
+                  echo "刪除 $image ..."
+                  gcloud artifacts docker images delete "$image" --delete-tags --quiet
+                done <<< "$IMAGES"
+                echo "刪除完成。"
+              fi
               
               echo "完成刪除 $DEPLOY_NAME 的所有資源"
             else
