@@ -71,7 +71,7 @@ jobs:
             # 檢查是否過期
             if [ $AGE -ge $EXPIRY_SECONDS ]; then
               EXPIRY_TS=$((CREATE_TIMESTAMP + EXPIRY_SECONDS))
-              EXPIRY_DATE=$(date -d "@$EXPIRY_TS" "+%Y-%m-%d %H:%M")
+              EXPIRY_DATE=$(TZ="Asia/Taipei" date -d "@$EXPIRY_TS" "+%Y-%m-%d %H:%M")
               echo "刪除過期的資源: $DEPLOY_NAME (過期時間: $EXPIRY_DATE)"
               
               # 刪除 deployment
@@ -88,7 +88,7 @@ jobs:
 
               # 刪除對應的 docker images
               IMAGES=$(gcloud artifacts docker tags list \
-              asia-east2-docker.pkg.dev/${PROJECT_ID}/${REPO}/features \
+              ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/features \
               --filter="tag~'-${DEPLOY_NAME//-/_}\\.'" \
               --format="value(tag)")
 
@@ -100,7 +100,9 @@ jobs:
                 # 逐一刪除
                 while IFS= read -r image; do
                   echo "刪除 $image ..."
-                  gcloud artifacts docker images delete "$image" --delete-tags --quiet
+                  gcloud artifacts docker images delete \
+                  "$REGION-docker.pkg.dev/$PROJECT_ID/$REPO/features:$image" \
+                  --delete-tags --quiet
                 done <<< "$IMAGES"
                 echo "刪除完成。"
               fi
