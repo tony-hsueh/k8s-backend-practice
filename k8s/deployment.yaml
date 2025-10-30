@@ -20,3 +20,22 @@ spec:
           envFrom:
             - configMapRef:
                 name: "${DEPLOYMENT_NAME}"
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 3000
+            initialDelaySeconds: 30 # 啟動後等 30 秒（給應用足夠啟動時間）
+            periodSeconds: 10 # 每 10 秒檢查一次
+            timeoutSeconds: 5 # 超時 5 秒
+            failureThreshold: 3 # 連續失敗 3 次才重啟 Pod
+            successThreshold: 1 # 成功 1 次就恢復
+
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 3000
+            initialDelaySeconds: 10 # 啟動後等 10 秒
+            periodSeconds: 5 # 每 5 秒檢查一次（比 liveness 更頻繁）
+            timeoutSeconds: 3
+            failureThreshold: 2 # 連續失敗 2 次就從 Service 移除
+            successThreshold: 1
