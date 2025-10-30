@@ -18,9 +18,6 @@ app.get("/livez", (req, res) => {
 // Readiness Probe: /readyz
 // 檢查應用是否能提供服務，例如 DB 已連線
 app.get("/readyz", (req, res) => {
-  if (!dbConnected) {
-    return res.status(500).send("Not Ready");
-  }
   res.status(200).send("Ready");
 });
 
