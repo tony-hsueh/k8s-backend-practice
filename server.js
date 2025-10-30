@@ -2,7 +2,11 @@ const express = require("express");
 const app = express();
 
 app.get("/", (req, res) => {
-  res.send("hello world !");
+  res.send("hello node F");
+});
+
+app.get("/env", (req, res) => {
+  res.json({ message: "hello node F", env: process.env.APP_ENV });
 });
 
 // Liveness Probe: /livez
