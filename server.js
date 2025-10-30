@@ -12,12 +12,14 @@ app.get("/env", (req, res) => {
 // Liveness Probe: /livez
 // 只檢查應用是否存活，不檢查 DB
 app.get("/livez", (req, res) => {
+  console.log("Liveness probe checked 測試一下");
   res.status(200).send("Alive");
 });
 
 // Readiness Probe: /readyz
 // 檢查應用是否能提供服務，例如 DB 已連線
 app.get("/readyz", (req, res) => {
+  console.log("Readiness probe checked 測試一下");
   res.status(200).send("Ready");
 });
 
