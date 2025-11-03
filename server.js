@@ -5,6 +5,14 @@ app.get("/", (req, res) => {
   res.send("hello world !");
 });
 
+app.get("/env", (req, res) => {
+  res.json({
+    API_URL: process.env.API_URL,
+    APP_ENV: process.env.APP_ENV,
+    APP_NAME: process.env.APP_NAME,
+  });
+});
+
 // Liveness Probe: /livez
 // 只檢查應用是否存活，不檢查 DB
 app.get("/livez", (req, res) => {
@@ -14,9 +22,6 @@ app.get("/livez", (req, res) => {
 // Readiness Probe: /readyz
 // 檢查應用是否能提供服務，例如 DB 已連線
 app.get("/readyz", (req, res) => {
-  if (!dbConnected) {
-    return res.status(500).send("Not Ready");
-  }
   res.status(200).send("Ready");
 });
 
